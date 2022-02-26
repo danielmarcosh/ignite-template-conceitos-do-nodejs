@@ -9,14 +9,17 @@ app.use(cors());
 app.use(express.json());
 
 const users = [];
-
+// eu
 function checksExistsUserAccount(request, response, next) {
-  const { username } = request.body;
+  const { username } = request.headers;
+
   const user = users.find((element) => element.username === username);
 
   if (!user) {
     return response.status(400).json({ error: "O usuário não existe" }).send();
   }
+
+  request.user = user;
 
   return next();
 }
@@ -47,9 +50,7 @@ app.post("/users", (request, response) => {
 app.get("/todos", checksExistsUserAccount, (request, response) => {
   const { user } = request;
 
-  const u = users.find((element) => element.user === user);
-
-  return response.status(200).json(u.todos);
+  return response.json(user.todos);
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
@@ -57,7 +58,6 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
 
   const { title, deadline } = request.body;
 
-  const u = users.find((element) => element.user === user);
   const todo = {
     id: uuidv4(),
     title: title,
@@ -65,7 +65,8 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
     deadline: new Date(deadline),
     created_at: new Date(),
   };
-  u.todos.push(todo);
+  
+  user.todos.push(todo);
 
   return response.status(201).json(todo);
 });
